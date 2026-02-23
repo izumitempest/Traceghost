@@ -1,0 +1,130 @@
+# traceghost
+
+## The Flight Recorder for Python Chaos
+
+**traceghost** is a lightweight, zero-dependency debugging library that acts as a "black box" for your functions. It stays silent while your code works, but the moment an exception occurs, it generates a forensic report of exactly what was happening inside your local variables.
+
+---
+
+## ✨ Features
+
+* **Zero Overhead:** Does nothing unless your code crashes.
+* **Variable Snatching:** Captures the state of every local variable at the moment of failure.
+* **Call Hierarchy:** Visualizes the breadcrumbs leading to the error.
+* **Memory Delta:** Reports how much memory was consumed during the function execution.
+* **Clean Reports:** Generates a "Chaos Report" in terminal or as a standalone HTML file.
+
+---
+
+## Quick Start
+
+### Installation
+
+```bash
+pip install traceghost
+
+```
+
+### Basic Usage
+
+Just drop the `@ghost` decorator on any function you want to monitor.
+
+```python
+from traceghost import ghost
+
+@ghost(report_type="terminal")
+def process_payment(user_id, amount):
+    balance = get_balance(user_id) # Imagine this returns 100
+    tax = 0.15
+    total = balance - (amount * tax)
+    
+    if total < 0:
+        raise ValueError("Insufficient funds after tax!")
+    return total
+
+# If this fails, traceghost prints a forensic breakdown of 
+# user_id, amount, balance, tax, and total.
+
+```
+
+---
+
+## 🛠 Advanced Configuration
+
+You can customize how `traceghost` handles the "crash data."
+
+| Feature | Option | Description |
+| --- | --- | --- |
+| **Export** | `export_html=True` | Generates a `ghost_report.html` with a clean UI. |
+| **Sensitivity** | `depth=3` | How many levels up the call stack to record. |
+| **Silent Mode** | `suppress=True` | Log the error but don't re-raise the exception. |
+| **Privacy** | `mask_vars=['password', 'key']` | Automatically redacts sensitive variable names. |
+
+### Example: The "Forensic" Setup
+
+```python
+@ghost(
+    export_html=True, 
+    mask_vars=['api_key', 'secret'],
+    log_memory=True
+)
+def sensitive_task(data):
+    # ... logic here ...
+
+```
+
+---
+
+## The "Chaos Report"
+
+When a function decorated with `@ghost` fails, it produces a report containing:
+
+1. **The Trigger:** The exact line and exception type.
+2. **The Snapshot:** A table of all `locals()` and `globals()` at that timestamp.
+3. **The Environment:** Python version, OS, and memory usage delta.
+4. **The Trace:** A cleaned-up, readable version of the stack trace.
+
+### Mockup: Chaos Report (Terminal)
+
+```text
+CHAOS REPORT: sensitive_task failed!
+------------------------------------------
+Error: ValueError("Invalid API key format")
+Location: sensitive_task.py, line 42
+
+VARIABLES:
+- data: {'id': 101, 'status': 'pending'}
+- api_key: ********** (REDACTED)
+- retry_count: 3
+- log_buffer: <list, size=512>
+
+SYSTEM:
+- Memory Delta: +2.4MB
+- Runtime: 0.12s
+------------------------------------------
+```
+
+---
+
+---
+
+## Why not just use `logging`?
+
+Standard logging tells you *where* it broke. **traceghost** tells you *why*.
+
+Instead of seeing:
+`IndexError: list index out of range`
+
+You see:
+`IndexError: list index out of range`
+`Context: items = [1, 2, 3], requested_index = 5, user_role = 'admin'`
+
+---
+
+## Contributing
+
+Contributions are welcome! If you have ideas for the "Time Travel" debugger feature or better HTML templates, feel free to open an issue.
+
+**License:** MIT
+
+**Author:** Izumi
